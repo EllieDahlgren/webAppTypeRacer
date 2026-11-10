@@ -218,3 +218,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+.env
+.venv/
+__pycache__/
+node_modules/
+dist/
+*.sqlite3
+.vscode/*
+!.vscode/settings.json
