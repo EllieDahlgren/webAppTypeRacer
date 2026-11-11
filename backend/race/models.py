@@ -18,6 +18,7 @@ class Race(models.Model):
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.WAITING)
     started_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    players = models.ManyToManyField(User, through="RaceResult", related_name="races")
 
     def __str__(self):
         return f"Race {self.id} ({self.status})"
@@ -32,7 +33,13 @@ class RaceResult(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["race", "user"], name="one_result_per_user_race"),
+            models.CheckConstraint(condition=models.Q(wpm__gte=0), name="wpm_not_negative"),
+            models.CheckConstraint(
+                condition=models.Q(accuracy__gte=0, accuracy__lte=100),
+                name="accuracy_between_0_and_100",
+            ),
         ]
+        indexes = [models.Index(fields=["wpm"])]
 
     def __str__(self):
         return f"{self.user.username} in race {self.race_id}"
