@@ -32,3 +32,9 @@ class RaceSerializer(serializers.ModelSerializer):
         model = Race
         fields = ("id", "status", "started_at", "created_at", "passage", "passage_id", "results")
         read_only_fields = ("status", "started_at", "created_at")
+
+class LeaderboardEntrySerializer(serializers.Serializer):
+    username = serializers.CharField()
+    avatar = serializers.CharField()
+    best_wpm = serializers.FloatField()
+    races = serializers.IntegerField()

@@ -3,10 +3,11 @@ from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
+from django.db.models import Count, F, Max
+from rest_framework.generics import ListAPIView
 
 from .models import Passage, Race, RaceResult
-from .serializers import PassageSerializer, RaceSerializer
-
+from .serializers import LeaderboardEntrySerializer, PassageSerializer, RaceSerializer
 
 class PassageViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Passage.objects.all()
@@ -46,3 +47,15 @@ class RaceViewSet(
         # re-fetch so the response includes the newly added player
         race = self.get_queryset().get(pk=race.pk)
         return Response(self.get_serializer(race).data)
+
+
+class LeaderboardView(ListAPIView):
+    serializer_class = LeaderboardEntrySerializer
+
+    def get_queryset(self):
+        return (
+            RaceResult.objects.filter(wpm__isnull=False)
+            .values(username=F("user__username"), avatar=F("user__profile__avatar"))
+            .annotate(best_wpm=Max("wpm"), races=Count("id"))
+            .order_by("-best_wpm")
+        )
